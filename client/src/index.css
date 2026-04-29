@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #22C55E;
+  --color-primary-foreground: #000000;
+  --color-secondary: #18181B;
+  --color-secondary-foreground: #ffffff;
+  --color-accent: #4ADE80;
+  --color-accent-foreground: #000000;
+  --color-muted: #27272A;
+  --color-muted-foreground: #A1A1AA;
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  --color-border: #27272A;
+  --color-input: #27272A;
+  --color-ring: #22C55E;
+  
+  --font-logo: "Righteous", cursive;
+  --font-heading: "Inter", sans-serif;
+  --font-body: "Public Sans", sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.1 70.6% 45.3%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Public Sans', sans-serif;
+    font-size: 1.125rem; /* Increased base size to 18px */
+    line-height: 1.75rem;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+    @apply font-extrabold tracking-tight;
+  }
+
+  h1 { font-size: 4.5rem; line-height: 1; }
+  h2 { font-size: 3.5rem; line-height: 1.1; }
+  h3 { font-size: 2.25rem; line-height: 2.5rem; }
+
+  section {
+    @apply min-h-screen flex flex-col justify-center py-24;
+  }
+}
+
+.logo-font {
+  font-family: 'Righteous', cursive;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #27272A;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #22C55E;
+}
+
+html {
+  scroll-behavior: smooth;
+  @apply bg-black;
+}
