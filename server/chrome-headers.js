@@ -1,17 +1,23 @@
-// chrome-headers.js — Fixed CORS for Chrome (strict origin matching)
+// chrome-headers.js — Permanent CORS fix (works for all Vercel deployments)
 
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "http://localhost:3000",
   "http://localhost:4173",
-  "https://digi-edu.vercel.app",
-  "https://digi-learners-hazel.vercel.app",
 ];
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  // Allow ALL vercel.app subdomains automatically
+  if (origin.endsWith(".vercel.app")) return true;
+  return false;
+};
 
 const chromeHeaders = (req, res, next) => {
   const origin = req.headers.origin;
 
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+  if (isAllowedOrigin(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
   } else if (!origin) {
