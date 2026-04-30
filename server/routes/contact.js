@@ -8,17 +8,13 @@ let transporter = null;
 const getTransporter = () => {
   if (!transporter) {
     transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
+      host: "smtp-relay.brevo.com",
       port: 587,
       secure: false,
-      requireTLS: true,
       auth: {
-        user: process.env.ADMIN_EMAIL,
-        pass: process.env.ADMIN_EMAIL_PASS,
+        user: process.env.BREVO_USER,
+        pass: process.env.BREVO_PASS,
       },
-      tls: {
-        rejectUnauthorized: false
-      }
     });
   }
   return transporter;
@@ -40,7 +36,7 @@ router.post("/", async (req, res) => {
 
     try {
       await getTransporter().sendMail({
-        from: `"DigiEdu Contact Form" <${process.env.ADMIN_EMAIL}>`,
+        from: `"DigiEdu Contact Form" <${process.env.BREVO_USER}>`,
         to: process.env.ADMIN_EMAIL,
         subject: `New Enquiry from ${name} — ${course}`,
         html: `
@@ -81,7 +77,7 @@ router.post("/", async (req, res) => {
           </div>
         `,
       });
-      console.log(`📧 Email sent for: ${name}`);
+      console.log(`📧 Email sent to admin for: ${name}`);
     } catch (emailError) {
       console.error("⚠️ Email failed (data saved):", emailError.message);
     }
