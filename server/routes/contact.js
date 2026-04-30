@@ -12,7 +12,7 @@ const getTransporter = () => {
       service: "gmail",
       auth: {
         user: process.env.ADMIN_EMAIL,
-        pass: process.env.ADMIN_EMAIL_PASS, // Must be a Gmail App Password, NOT your real password
+        pass: process.env.ADMIN_EMAIL_PASS,
       },
     });
   }
@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
   try {
     const { name, email, phone, course, message } = req.body;
 
-    // ✅ Basic presence check before hitting DB
+    // Basic presence check before hitting DB
     if (!name || !email || !phone || !course || !message) {
       return res.status(400).json({
         success: false,
@@ -31,12 +31,12 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // ✅ STEP 1 — Save to MongoDB Atlas
+    // STEP 1 — Save to MongoDB Atlas
     const newContact = new Contact({ name, email, phone, course, message });
     await newContact.save();
     console.log(`✅ Contact saved: ${name} <${email}>`);
 
-    // ✅ STEP 2 — Send email (non-blocking — DB save already succeeded)
+    // STEP 2 — Send email (non-blocking — DB save already succeeded)
     try {
       if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_EMAIL_PASS) {
         throw new Error("Email credentials not set in .env");
@@ -89,7 +89,6 @@ router.post("/", async (req, res) => {
 
       console.log(`📧 Email sent to admin for: ${name}`);
     } catch (emailError) {
-      // Email failed — but data IS saved, so still return success
       console.error("⚠️ Email sending failed (data saved):", emailError.message);
     }
 
@@ -101,13 +100,11 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.error("❌ Contact route error:", error.message);
 
-    // Mongoose validation errors (field missing, too short, etc.)
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((e) => e.message);
       return res.status(400).json({ success: false, message: messages[0] });
     }
 
-    // Duplicate key (if you add unique index later)
     if (error.code === 11000) {
       return res.status(409).json({ success: false, message: "Duplicate submission detected." });
     }
