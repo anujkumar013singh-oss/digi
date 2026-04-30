@@ -9,12 +9,16 @@ const getTransporter = () => {
   if (!transporter) {
     transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false,
+      requireTLS: true,
       auth: {
         user: process.env.ADMIN_EMAIL,
         pass: process.env.ADMIN_EMAIL_PASS,
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     });
   }
   return transporter;
@@ -39,7 +43,43 @@ router.post("/", async (req, res) => {
         from: `"DigiEdu Contact Form" <${process.env.ADMIN_EMAIL}>`,
         to: process.env.ADMIN_EMAIL,
         subject: `New Enquiry from ${name} — ${course}`,
-        html: `<p><b>Name:</b> ${name}</p><p><b>Email:</b> ${email}</p><p><b>Phone:</b> ${phone}</p><p><b>Course:</b> ${course}</p><p><b>Message:</b> ${message}</p>`,
+        html: `
+          <div style="font-family: Arial, sans-serif; background:#f4f4f4; padding:20px;">
+            <div style="max-width:600px; margin:auto; background:#1a1a1a; border-radius:8px; color:#fff;">
+              <div style="background:#1e4b7a; padding:20px;">
+                <h2 style="margin:0;">New Contact Form Submission</h2>
+                <p style="color:#a0c4ff; margin:5px 0 0;">DigiEdu Website</p>
+              </div>
+              <div style="padding:20px;">
+                <table style="width:100%; border-collapse:collapse; color:#fff;">
+                  <tr style="border-bottom:1px solid #333;">
+                    <td style="padding:12px 0; color:#888; width:30%;">Name</td>
+                    <td style="padding:12px 0;">${name}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #333;">
+                    <td style="padding:12px 0; color:#888;">Email</td>
+                    <td style="padding:12px 0; color:#a0c4ff;">${email}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #333;">
+                    <td style="padding:12px 0; color:#888;">Phone</td>
+                    <td style="padding:12px 0;">${phone}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #333;">
+                    <td style="padding:12px 0; color:#888;">Course</td>
+                    <td style="padding:12px 0; color:#a0c4ff;">${course}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 0; color:#888; vertical-align:top;">Message</td>
+                    <td style="padding:12px 0;">${message}</td>
+                  </tr>
+                </table>
+              </div>
+              <div style="background:#222; padding:10px 20px; text-align:center; font-size:12px; color:#666;">
+                Submitted on ${new Date().toLocaleString("en-IN")}
+              </div>
+            </div>
+          </div>
+        `,
       });
       console.log(`📧 Email sent for: ${name}`);
     } catch (emailError) {
