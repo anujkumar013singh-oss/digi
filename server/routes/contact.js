@@ -1,46 +1,59 @@
-// chrome-headers.js — Permanent CORS fix (works for all Vercel deployments)
+const express = require("express");
+const router = express.Router();
+const Contact = require("../models/Contact");
+const nodemailer = require("nodemailer");
 
-const ALLOWED_ORIGINS = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "http://localhost:4173",
-];
+let transporter = null;
 
-const isAllowedOrigin = (origin) => {
-  if (!origin) return false;
-  if (ALLOWED_ORIGINS.includes(origin)) return true;
-  // Allow ALL vercel.app subdomains automatically
-  if (origin.endsWith(".vercel.app")) return true;
-  return false;
+const getTransporter = () => {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.ADMIN_EMAIL,
+        pass: process.env.ADMIN_EMAIL_PASS,
+      },
+    });
+  }
+  return transporter;
 };
 
-const chromeHeaders = (req, res, next) => {
-  const origin = req.headers.origin;
+router.post("/", async (req, res) => {
+  try {
+    const { name, email, phone, course, message } = req.body;
 
-  if (isAllowedOrigin(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-  } else if (!origin) {
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    if (!name || !email || !phone || !course || !message) {
+      return res.status(400).json({ success: false, message: "All fields are required." });
+    }
+
+    const newContact = new Contact({ name, email, phone, course, message });
+    await newContact.save();
+    console.log(`✅ Contact saved: ${name} <${email}>`);
+
+    res.status(200).json({ success: true, message: "Enquiry submitted successfully!" });
+
+    try {
+      await getTransporter().sendMail({
+        from: `"DigiEdu Contact Form" <${process.env.ADMIN_EMAIL}>`,
+        to: process.env.ADMIN_EMAIL,
+        subject: `New Enquiry from ${name} — ${course}`,
+        html: `<p><b>Name:</b> ${name}</p><p><b>Email:</b> ${email}</p><p><b>Phone:</b> ${phone}</p><p><b>Course:</b> ${course}</p><p><b>Message:</b> ${message}</p>`,
+      });
+      console.log(`📧 Email sent for: ${name}`);
+    } catch (emailError) {
+      console.error("⚠️ Email failed (data saved):", emailError.message);
+    }
+
+  } catch (error) {
+    console.error("❌ Error:", error.message);
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((e) => e.message);
+      return res.status(400).json({ success: false, message: messages[0] });
+    }
+    return res.status(500).json({ success: false, message: "Server error. Please try again." });
   }
+});
 
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-  );
-
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Accept, X-Requested-With, Origin"
-  );
-
-  res.setHeader("Access-Control-Max-Age", "86400");
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-
-  next();
-};
-
-module.exports = chromeHeaders;
+module.exports = router;
